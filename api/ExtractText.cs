@@ -11,11 +11,13 @@ namespace Azureish.Santa.Mailroom.Api
     public static class ExtractText
     {
         [FunctionName("ExtractText")]
-        public static void Run([BlobTrigger("letters/{name}", Connection = "santamailroomstor_STORAGE")]Stream myBlob, 
+        public static void Run(
+            [BlobTrigger("letters/{name}", Connection = "santamailroomstor_STORAGE")]Stream inputBlob, 
+            [Blob("processed/{name}.json", FileAccess.Write, Connection = "santamailroomstor_STORAGE")]Stream outputBlob,
             string name, 
             ILogger log)
         {
-            log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {myBlob.Length} Bytes");
+            log.LogInformation($"C# Blob trigger function Processed blob\n Name:{name} \n Size: {inputBlob.Length} Bytes");
 
             string _apiKey = Environment.GetEnvironmentVariable("cognitiveKey");
             string _apiEndpoint = Environment.GetEnvironmentVariable("cognitiveEndpoint");
@@ -25,7 +27,7 @@ namespace Azureish.Santa.Mailroom.Api
                 httpClient.BaseAddress = new Uri(_apiUrlBase);
                 httpClient.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", _apiKey);
 
-                using(HttpContent content = new StreamContent(myBlob)) {
+                using(HttpContent content = new StreamContent(inputBlob)) {
                     content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
                     var cognitiveServicesUri = $"{_apiUrlBase}?handwriting=true";
@@ -50,6 +52,12 @@ namespace Azureish.Santa.Mailroom.Api
                         System.Threading.Thread.Sleep(1000);
                     } while (i < 10 && contentString.IndexOf("\"status\":\"Succeeded\"") == -1);
                     
+                    log.LogInformation(contentString);
+
+                    using (var writer = new StreamWriter(outputBlob))
+                    {
+                        writer.Write(contentString);
+                    }
                 }
             }
 

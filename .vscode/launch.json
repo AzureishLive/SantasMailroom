@@ -6,6 +6,13 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}"
+        },
+        {
+            "name": "Blazor",
+            "type": "blazorwasm",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/client",
+            "browser": "edge"
         }
     ]
 }

@@ -2,17 +2,26 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Attach to .NET Functions",
+            "name": "Jingle the bells",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}"
         },
         {
-            "name": "Blazor",
+            "name": "Deck the halls",
             "type": "blazorwasm",
             "request": "launch",
             "cwd": "${workspaceFolder}/client",
             "browser": "edge"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "DASHING THROUGH THE SNOW",
+            "configurations": [
+                    "Jingle the bells",
+                    "Deck the halls"
+            ]
         }
     ]
 }

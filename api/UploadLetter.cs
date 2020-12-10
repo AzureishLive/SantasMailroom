@@ -17,7 +17,7 @@ namespace Azureish.Santa.Mailroom.Api
         [FunctionName("UploadLetter")]
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
-            [Blob("letters", Connection = "StorageAccountConnectionString")] CloudBlobContainer outputContainer,
+            [Blob("letters", Connection = "santamailroomstor_STORAGE")] CloudBlobContainer outputContainer,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request.");

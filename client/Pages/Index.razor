@@ -1,4 +1,8 @@
 ﻿@page "/"
+@inject HttpClient Http
+@inject Microsoft.Extensions.Configuration.IConfiguration config
+@using System.IO
+@using System.Net.Http.Headers
 
 <h1>Hello, North Pole! &#129482;</h1>
 
@@ -8,11 +12,47 @@
     <InputFile OnChange="OnInputFileChange" />
 </p>
 
-
+@_uploadState
 
 @code{
 
+    private string _uploadState;
+
     private async Task OnInputFileChange(InputFileChangeEventArgs inputArgs) {
-        Console.WriteLine("Hello");
+        var img = inputArgs.File;
+        
+        if(IsImage(img)) {
+            Stream stream = img.OpenReadStream(maxAllowedSize: 5120000);
+            StreamContent imgStream = new StreamContent(stream);
+            imgStream.Headers.ContentType = new MediaTypeHeaderValue(img.ContentType);
+
+            var formContent = new MultipartFormDataContent
+            {
+                { imgStream, "imgKey", img.Name }
+            };
+
+            var response = await Http.PostAsync($"{config["apiBaseUrl"]}/UploadLetter", formContent);
+
+            if(response.IsSuccessStatusCode) {
+                _uploadState = "Success! Yay!";                
+            } else {
+                _uploadState = "An error has occurred";
+            }
+
+            stream.Close();
+            StateHasChanged();
+        }
     }
+
+    public static bool IsImage(IBrowserFile file)
+        {
+            if (file.ContentType.Contains("image"))
+            {
+                return true;
+            }
+
+            string[] formats = new string[] { ".jpg", ".png", ".gif", ".jpeg" };
+
+            return formats.Any(item => file.Name.EndsWith(item, StringComparison.OrdinalIgnoreCase));
+        }
 }
